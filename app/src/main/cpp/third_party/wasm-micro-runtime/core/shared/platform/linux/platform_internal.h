@@ -31,7 +31,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/time.h>
-#include <sys/timeb.h>
+//#include <sys/time.h>
 #include <sys/uio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -87,7 +87,7 @@ typedef sem_t korp_sem;
 
 #include <setjmp.h>
 
-#define OS_ENABLE_HW_BOUND_CHECK
+#undef OS_ENABLE_HW_BOUND_CHECK
 
 typedef jmp_buf korp_jmpbuf;
 
