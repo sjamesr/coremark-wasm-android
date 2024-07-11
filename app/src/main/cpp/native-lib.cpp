@@ -58,10 +58,31 @@ Java_com_example_myapplication_MainActivity_stringFromJNI(
 
     uint32_t argv[0];
 
-    if (wasm_runtime_call_wasm(exec_env, start_func, 0, argv)) {
-        printf("Success!");
-    } else {
-        printf("%s\n", wasm_runtime_get_exception(module_inst));
+#define ENUM_TO_STR(x) {(x), (#x)}
+    std::unordered_map<RunningMode, std::string> names = {
+            ENUM_TO_STR(RunningMode::Mode_Fast_JIT),
+            ENUM_TO_STR(RunningMode::Mode_Interp),
+            ENUM_TO_STR(RunningMode::Mode_LLVM_JIT),
+            ENUM_TO_STR(RunningMode::Mode_Multi_Tier_JIT),
+    };
+#undef ENUM_TO_STR
+
+    for (const auto &running_mode: {RunningMode::Mode_Interp, RunningMode::Mode_Fast_JIT,
+                                    RunningMode::Mode_LLVM_JIT, RunningMode::Mode_Multi_Tier_JIT}) {
+        if (!wasm_runtime_set_running_mode(module_inst, running_mode)) {
+            __android_log_print(ANDROID_LOG_ERROR, "CoreMarkWasm", "Failed to set running mode %s",
+                                names[running_mode].c_str());
+            continue;
+        } else {
+            __android_log_print(ANDROID_LOG_INFO, "CoreMarkWasm", "Set running mode to %s",
+                                names[running_mode].c_str());
+        }
+        if (wasm_runtime_call_wasm(exec_env, start_func, 0, argv)) {
+            __android_log_print(ANDROID_LOG_INFO, "CoreMarkWasm", "Success!");
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "CoreMarkWasm", "%s\n",
+                                wasm_runtime_get_exception(module_inst));
+        }
     }
 
     return env->NewStringUTF("Hello");
